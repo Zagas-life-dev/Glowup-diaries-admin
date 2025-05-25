@@ -25,19 +25,26 @@ export default function DashboardPage() {
           { count: eventsCount },
           { count: opportunitiesCount },
           { count: resourcesCount },
-          { data: pendingSubmissions },
+          { data: pendingEventSubmissions },
+          { data: pendingOpportunitySubmissions },
         ] = await Promise.all([
           supabase.from("events").select("*", { count: "exact", head: true }),
           supabase.from("opportunities").select("*", { count: "exact", head: true }),
           supabase.from("resources").select("*", { count: "exact", head: true }),
-          supabase.from("submissions").select("*").eq("status", "pending"),
+          supabase.from("submitted_events").select("*").eq("status", "pending"),
+          supabase.from("submitted_opportunities").select("*").eq("status", "pending"),
         ])
+
+        // Calculate total pending submissions from both tables
+        const totalPendingSubmissions =
+          (pendingEventSubmissions?.length || 0) +
+          (pendingOpportunitySubmissions?.length || 0);
 
         setStats({
           events: eventsCount || 0,
           opportunities: opportunitiesCount || 0,
           resources: resourcesCount || 0,
-          pendingSubmissions: pendingSubmissions?.length || 0,
+          pendingSubmissions: totalPendingSubmissions,
         })
       } catch (error: any) {
         setError(error.message)
