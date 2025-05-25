@@ -98,10 +98,8 @@ export default function NewEventPage() {
         throw new Error("Invalid date or time format")
       }
 
-      // Convert to UTC for storage while preserving the intended local time
-      const datetime = localDate.toISOString();
-
-      const { error: insertError } = await supabase
+      // Insert event data directly without trying to convert to UTC
+      const { error: insertError, data: newEvent } = await supabase
         .from("events")
         .insert({
           id: formData.id,
@@ -115,10 +113,14 @@ export default function NewEventPage() {
           link: formData.link,
           featured: formData.featured
         })
+        .select()
 
       if (insertError) {
         throw insertError
       }
+
+      // Log the successful creation for debugging
+      console.log("Event created successfully:", newEvent)
 
       router.push("/admin/events")
       toast({

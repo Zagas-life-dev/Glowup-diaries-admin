@@ -36,8 +36,21 @@ interface Opportunity {
   deadline: string
   eligibility: string
   category: string
-  
   featured: boolean
+  created_at: string
+}
+
+interface SubmittedOpportunity {
+  id: string
+  submitter_name: string
+  submitter_email: string
+  title: string
+  description: string
+  deadline: string
+  eligibility: string
+  category: string
+  link: string
+  status: string
   created_at: string
 }
 
@@ -76,9 +89,8 @@ export default function OpportunitiesPage() {
   const fetchPendingSubmissions = async () => {
     try {
       const { data, error } = await supabase
-        .from('submissions')
+        .from('submitted_opportunities')
         .select('*')
-        .eq('submission_type', 'opportunity')
         .eq('status', 'pending')
         .order('created_at', { ascending: false });
 
@@ -88,7 +100,7 @@ export default function OpportunitiesPage() {
       toast({
         variant: "destructive",
         title: "Error",
-        description: error.message || "Failed to fetch pending submissions",
+        description: error.message || "Failed to fetch pending opportunity submissions",
       });
     }
   };
@@ -153,7 +165,7 @@ export default function OpportunitiesPage() {
     try {
       // Get the submission details
       const { data: submission, error: fetchError } = await supabase
-        .from('submissions')
+        .from('submitted_opportunities')
         .select('*')
         .eq('id', id)
         .single();
@@ -161,29 +173,39 @@ export default function OpportunitiesPage() {
       if (fetchError) throw fetchError;
       if (!submission) throw new Error('Submission not found');
 
-      // Insert into opportunities table
-      const { error: insertError } = await supabase
+      console.log("Opportunity submission to approve:", submission); // Debug log
+
+      // Insert into opportunities table with proper field checking
+      const { error: insertError, data: insertedData } = await supabase
         .from('opportunities')
         .insert({
-          title: submission.title,
-          description: submission.description,
-          deadline: submission.deadline,
-          eligibility: submission.eligibility,
-          category: submission.category,
-          is_free: submission.is_free,
-          link: submission.link,
+          title: submission.title || "Untitled Opportunity",
+          description: submission.description || "",
+          deadline: submission.deadline || null,
+          eligibility: submission.eligibility || "",
+          category: submission.category || "Other",
+          link: submission.link || "",
           featured: false
-        });
+        })
+        .select();
 
-      if (insertError) throw insertError;
+      if (insertError) {
+        console.error("Insert error:", insertError);
+        throw insertError;
+      }
 
-      // Delete from submissions table
-      const { error: deleteError } = await supabase
-        .from('submissions')
-        .delete()
+      console.log("Successfully inserted opportunity:", insertedData);
+
+      // Update submitted_opportunities status to approved
+      const { error: updateError } = await supabase
+        .from('submitted_opportunities')
+        .update({ status: 'approved' })
         .eq('id', id);
 
-      if (deleteError) throw deleteError;
+      if (updateError) {
+        console.error("Update error:", updateError);
+        throw updateError;
+      }
 
       // Update local state
       setPendingOpportunities(current => current.filter(s => s.id !== id));
@@ -194,6 +216,7 @@ export default function OpportunitiesPage() {
         description: "Opportunity has been approved and published.",
       });
     } catch (error: any) {
+      console.error("Full approval error:", error);
       toast({
         variant: "destructive",
         title: "Error",
@@ -209,8 +232,8 @@ export default function OpportunitiesPage() {
     
     try {
       const { error } = await supabase
-        .from('submissions')
-        .delete()
+        .from('submitted_opportunities')
+        .update({ status: 'rejected' })
         .eq('id', id);
 
       if (error) throw error;
@@ -316,8 +339,12 @@ export default function OpportunitiesPage() {
                     <CardDescription>{opportunity.description}</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-sm text-gray-500">
-                      <p>Submitted by: {opportunity.submitter_name}</p>
+                    <div className="text-sm text-gray-500 space-y-1">
+                      <p>Submitted by: {opportunity.submitter_name} ({opportunity.submitter_email})</p>
+                      <p>Deadline: {opportunity.deadline}</p>
+                      <p>Eligibility: {opportunity.eligibility}</p>
+                      <p>Category: {opportunity.category}</p>
+                      <p>Link: {opportunity.link}</p>
                       <p>Submitted on: {new Date(opportunity.created_at).toLocaleDateString()}</p>
                     </div>
                   </CardContent>

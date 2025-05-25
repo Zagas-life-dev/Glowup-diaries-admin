@@ -26,20 +26,19 @@ interface Event {
   is_free: boolean;
 }
 
-interface Submission {
+interface SubmittedEvent {
   id: string
-  submitter_name: string
-  submitter_email: string
+  name: string
+  email: string
   title: string
   description: string
-  submission_type: "event" | "opportunity"
   date: string
   time: string
   location: string
   location_type: string
   is_free: boolean
   link: string
-  status: "pending" | "approved" | "rejected"
+  status: string
   created_at: string
 }
 
@@ -47,7 +46,7 @@ export default function EventsPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [publishedEvents, setPublishedEvents] = useState<Event[]>([])
-  const [pendingSubmissions, setPendingSubmissions] = useState<Submission[]>([])
+  const [pendingSubmissions, setPendingSubmissions] = useState<SubmittedEvent[]>([])
   const [processing, setProcessing] = useState<Record<string, boolean>>({})
   const supabase = getSupabaseBrowserClient()
 
@@ -89,9 +88,8 @@ export default function EventsPage() {
   const fetchPendingSubmissions = async () => {
     try {
       const { data, error } = await supabase
-        .from('submissions')
+        .from('submitted_events')
         .select('*')
-        .eq('submission_type', 'event')
         .eq('status', 'pending')
         .order('created_at', { ascending: false })
 
@@ -101,7 +99,7 @@ export default function EventsPage() {
       toast({
         variant: "destructive",
         title: "Error",
-        description: error.message || "Failed to fetch pending submissions",
+        description: error.message || "Failed to fetch pending event submissions",
       })
     }
   }
@@ -109,6 +107,9 @@ export default function EventsPage() {
   const cleanupPastEvents = async () => {
     try {
       const now = new Date()
+      // Subtract one day from current date to keep today's events visible
+      now.setDate(now.getDate() - 1)
+      
       const { data: expiredEvents, error: fetchError } = await supabase
         .from('events')
         .select('id, date')
@@ -206,7 +207,7 @@ export default function EventsPage() {
     try {
       // Get the submission details
       const { data: submission, error: fetchError } = await supabase
-        .from('submissions')
+        .from('submitted_events')
         .select('*')
         .eq('id', id)
         .single()
@@ -230,13 +231,13 @@ export default function EventsPage() {
 
       if (insertError) throw insertError
 
-      // Delete from submissions table
-      const { error: deleteError } = await supabase
-        .from('submissions')
-        .delete()
+      // Update submitted_events status to approved
+      const { error: updateError } = await supabase
+        .from('submitted_events')
+        .update({ status: 'approved' })
         .eq('id', id)
 
-      if (deleteError) throw deleteError
+      if (updateError) throw updateError
 
       // Update local state
       setPendingSubmissions(current => current.filter(s => s.id !== id))
@@ -262,7 +263,7 @@ export default function EventsPage() {
     
     try {
       const { error } = await supabase
-        .from('submissions')
+        .from('submitted_events')
         .update({ status: 'rejected' })
         .eq('id', id)
 
@@ -317,7 +318,7 @@ export default function EventsPage() {
                   </CardHeader>
                   <CardContent>
                     <div className="text-sm text-gray-500 space-y-1">
-                      <p>Submitted by: {submission.submitter_name} ({submission.submitter_email})</p>
+                      <p>Submitted by: {submission.name} ({submission.email})</p>
                       <p>Date: {submission.date}</p>
                       <p>Time: {submission.time}</p>
                       <p>Location: {submission.location} ({submission.location_type})</p>
