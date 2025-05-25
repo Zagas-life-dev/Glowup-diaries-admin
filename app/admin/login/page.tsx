@@ -1,13 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { useSearchParams } from "next/navigation";
 
-const LoginPage = () => {
+// Component that uses search params
+function LoginForm() {
   const searchParams = useSearchParams();
   const errorType = searchParams.get("error");
   const supabase = createClientComponentClient();
@@ -157,6 +158,32 @@ const LoginPage = () => {
         </form>
       </div>
     </div>
+  );
+}
+
+// Loading fallback component
+function LoginFormLoading() {
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
+      <div className="w-full max-w-md p-8 space-y-6 bg-white rounded shadow-md">
+        <h2 className="text-2xl font-bold text-center">Welcome to Admin Portal</h2>
+        <p className="text-center text-gray-600">Loading...</p>
+        <div className="animate-pulse space-y-4">
+          <div className="h-10 bg-gray-200 rounded"></div>
+          <div className="h-10 bg-gray-200 rounded"></div>
+          <div className="h-10 bg-gray-200 rounded"></div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Main page component with Suspense boundary
+const LoginPage = () => {
+  return (
+    <Suspense fallback={<LoginFormLoading />}>
+      <LoginForm />
+    </Suspense>
   );
 };
 
