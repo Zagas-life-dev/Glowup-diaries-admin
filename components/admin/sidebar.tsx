@@ -6,7 +6,7 @@ import Image from "next/image"
 import { usePathname, useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { getSupabaseBrowserClient } from "@/lib/supabase"
-import { LayoutDashboard, Calendar, Users, FileText, ClipboardList, Settings, LogOut, Menu, X, MessageSquare } from "lucide-react"
+import { LayoutDashboard, Calendar, Users, FileText, ClipboardList, Settings, LogOut, Menu, X, MessageSquare, Briefcase } from "lucide-react"
 
 interface AdminSidebarProps {
   user: {
@@ -47,6 +47,11 @@ export default function AdminSidebar({ user }: AdminSidebarProps) {
       description: "Manage opportunities and submissions",
     },
     {
+      name: "Jobs",
+      href: "/admin/jobs",
+      icon: Briefcase,
+    },
+    {
       name: "Resources",
       href: "/admin/resources",
       icon: FileText,
@@ -63,6 +68,7 @@ export default function AdminSidebar({ user }: AdminSidebarProps) {
       icon: Settings,
       description: "Manage your account settings",
     },
+
 
   ]
 

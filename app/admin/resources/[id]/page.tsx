@@ -21,7 +21,6 @@ interface ResourceFormData {
   description: string
   category: string
   is_premium: boolean
-  price: number
   link: string
   file_url?: string
   featured: boolean
@@ -66,11 +65,6 @@ export default function EditResourcePage({ params }: { params: { id: string } })
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
     setFormData((prev) => prev ? ({ ...prev, [name]: value }) : null)
-  }
-
-  const handleNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
-    setFormData((prev) => prev ? ({ ...prev, [name]: parseFloat(value) || 0 }) : null)
   }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -121,7 +115,6 @@ export default function EditResourcePage({ params }: { params: { id: string } })
           description: formData.description,
           category: formData.category,
           is_premium: formData.is_premium,
-          price: formData.is_premium ? formData.price : 0,
           link: formData.is_premium ? formData.link : "",
           file_url: fileUrl,
           featured: formData.featured
@@ -229,20 +222,6 @@ export default function EditResourcePage({ params }: { params: { id: string } })
                     value={formData.link}
                     onChange={handleChange}
                     placeholder="Enter resource link (e.g., course platform URL)"
-                    required
-                  />
-                </div>
-                <div className="space-y-2 mt-4">
-                  <Label htmlFor="price">Price ($)</Label>
-                  <Input
-                    id="price"
-                    name="price"
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    value={formData.price}
-                    onChange={handleNumberChange}
-                    placeholder="Enter price"
                     required
                   />
                 </div>

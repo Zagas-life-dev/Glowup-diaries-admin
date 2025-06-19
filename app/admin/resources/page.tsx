@@ -16,10 +16,9 @@ interface Resource {
   description: string
   category: string
   is_premium: boolean
-  price: number
-  featured: boolean
   file_url: string
   created_at: string
+  featured?: boolean;
 }
 
 export default function ResourcesPage() {
@@ -129,9 +128,6 @@ export default function ResourcesPage() {
                   <div className="flex gap-2">
                     <Badge variant="secondary">{resource.category}</Badge>
                     {resource.featured && <Badge className="bg-amber-500">Featured</Badge>}
-                    <Badge variant={resource.is_premium ? "default" : "outline"}>
-                      {resource.is_premium ? `Premium - $${resource.price}` : "Free"}
-                    </Badge>
                   </div>
                 </div>
               </CardHeader>

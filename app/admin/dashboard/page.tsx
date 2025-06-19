@@ -13,6 +13,7 @@ export default function DashboardPage() {
     events: 0,
     opportunities: 0,
     resources: 0,
+    jobs: 0,
     pendingSubmissions: 0,
   })
 
@@ -25,12 +26,14 @@ export default function DashboardPage() {
           { count: eventsCount },
           { count: opportunitiesCount },
           { count: resourcesCount },
+          { count: jobsCount },
           { data: pendingEventSubmissions },
           { data: pendingOpportunitySubmissions },
         ] = await Promise.all([
           supabase.from("events").select("*", { count: "exact", head: true }),
           supabase.from("opportunities").select("*", { count: "exact", head: true }),
           supabase.from("resources").select("*", { count: "exact", head: true }),
+          supabase.from("jobs").select("*", { count: "exact", head: true }),
           supabase.from("submitted_events").select("*").eq("status", "pending"),
           supabase.from("submitted_opportunities").select("*").eq("status", "pending"),
         ])
@@ -44,6 +47,7 @@ export default function DashboardPage() {
           events: eventsCount || 0,
           opportunities: opportunitiesCount || 0,
           resources: resourcesCount || 0,
+          jobs: jobsCount || 0,
           pendingSubmissions: totalPendingSubmissions,
         })
       } catch (error: any) {
@@ -77,6 +81,13 @@ export default function DashboardPage() {
       icon: FileText,
       color: "text-purple-500",
       bgColor: "bg-purple-100",
+    },
+    {
+      title: "Total Jobs",
+      value: stats.jobs,
+      icon: Users, // You can use a more appropriate icon if available
+      color: "text-orange-500",
+      bgColor: "bg-orange-100",
     },
     {
       title: "Pending Submissions",

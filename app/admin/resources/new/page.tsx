@@ -21,7 +21,6 @@ interface ResourceFormData {
   description: string;
   category: string;
   is_premium: boolean;
-  price: number;
   featured: boolean;
   file_url?: string;
   link?: string;
@@ -44,7 +43,6 @@ export default function NewResourcePage() {
     description: "",
     category: "",
     is_premium: false,
-    price: 0,
     featured: false,
     link: "",
   })
@@ -58,11 +56,6 @@ export default function NewResourcePage() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
-  }
-
-  const handleNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: parseFloat(value) || 0 }))
   }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -114,7 +107,6 @@ export default function NewResourcePage() {
         .insert({
           ...formData,
           file_url: formData.is_premium ? formData.link : fileUrl,
-          price: formData.is_premium ? formData.price : 0,
         })
 
       if (insertError) {
@@ -233,20 +225,6 @@ export default function NewResourcePage() {
                   placeholder="Enter resource link (e.g., course platform URL)"
                   required
                 />
-                <div className="space-y-2 mt-4">
-                  <Label htmlFor="price">Price ($)</Label>
-                  <Input
-                    id="price"
-                    name="price"
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    value={formData.price}
-                    onChange={handleNumberChange}
-                    placeholder="Enter price"
-                    required
-                  />
-                </div>
               </div>
             ) : (
               <div className="space-y-2">
