@@ -58,6 +58,12 @@ export default function AdminSidebar({ user }: AdminSidebarProps) {
       description: "Manage educational resources",
     },
     {
+      name: "new",
+      href: "/admin/newsletter-signups",
+      icon: FileText,
+      description: "Manage educational resources",
+    },
+    {
       name: "Feedback",
       href: "/admin/feedback",
       icon: MessageSquare,
